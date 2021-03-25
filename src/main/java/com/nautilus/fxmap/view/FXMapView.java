@@ -2,11 +2,16 @@ package com.nautilus.fxmap.view;
 
 import com.nautilus.fxmap.geo.GeoBoundary;
 import com.nautilus.fxmap.geo.MapProjection;
+import com.nautilus.fxmap.geo.MapSource;
+import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.layout.Pane;
 import javafx.scene.web.WebView;
+
+import java.util.List;
 
 public abstract class FXMapView extends Pane implements MapProjection.MapBoundChangeListener {
     @FXML
@@ -16,7 +21,9 @@ public abstract class FXMapView extends Pane implements MapProjection.MapBoundCh
     protected WebView webView;
 
     protected MapProjection mapContent;
-    protected MapViewEventHandler mapViewEventHandler;
+    protected AnimationTimer animation;
+    protected boolean animationStarted = false;
+    protected ContextMenu activeContextMenu = null;
 
     public FXMapView() {}
 
@@ -41,13 +48,14 @@ public abstract class FXMapView extends Pane implements MapProjection.MapBoundCh
         });
     }
 
-    abstract void render();
+    protected abstract void render();
 
     @Override
     public void onMapBoundChange(GeoBoundary old, GeoBoundary bounds1) {
         Platform.runLater(() -> {
-            if(mapViewEventHandler != null) {
-                mapViewEventHandler.onMapBoundChanged(mapContent.getZoomLevel());
+            List<? extends MapViewEventHandler> mapViewEventHandlers = getMapViewEventHandlers();
+            if(mapViewEventHandlers != null) {
+                mapViewEventHandlers.parallelStream().forEach(h -> h.onMapBoundChanged(mapContent.getZoomLevel()));
             }
         });
         render();
@@ -70,6 +78,16 @@ public abstract class FXMapView extends Pane implements MapProjection.MapBoundCh
         render();
     }
 
+    public void onSwitchMapSource(MapSource mapSource) {
+        final MapSource afterChangeMS = this.mapContent.switchMapSource(mapSource);
+        Platform.runLater(() -> {
+            List<? extends MapViewEventHandler> mapViewEventHandlers = getMapViewEventHandlers();
+            if(mapViewEventHandlers != null) {
+                mapViewEventHandlers.parallelStream().forEach(h -> h.onMapSourceChange(afterChangeMS));
+            }
+        });
+    }
+
     public MapProjection getMapContent() {
         return mapContent;
     }
@@ -78,11 +96,7 @@ public abstract class FXMapView extends Pane implements MapProjection.MapBoundCh
         this.mapContent = mapContent;
     }
 
-    public MapViewEventHandler getMapViewEventHandler() {
-        return mapViewEventHandler;
-    }
+    public abstract List<? extends MapViewEventHandler> getMapViewEventHandlers();
 
-    public void setMapViewEventHandler(MapViewEventHandler mapViewEventHandler) {
-        this.mapViewEventHandler = mapViewEventHandler;
-    }
+    public abstract void setMapViewEventHandler(List<? extends MapViewEventHandler> mapViewEventHandlers);
 }
