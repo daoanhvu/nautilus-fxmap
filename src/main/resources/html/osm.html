@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <style>
+            html, body {height: 100%; width: 100%; margin: 0;}
+            #map {height: 100%; width: 100%;}
+        </style>
+        <title>OSM</title>
+        <link rel="stylesheet" href="ol/ol.css" type="text/css" >
+        <script src="ol/ol.js"></script>
+    </head>
+    <body>
+        <div id="map" class="map"></div>
+        <script defer="defer" type="text/javascript">
+            let loadedUrl = new URL(window.location.href);
+            let urlParams = new URLSearchParams(loadedUrl.search);
+            let initZoom = urlParams.get('zoom');
+            let initLat = urlParams.get('lat');
+            let initLng = urlParams.get('lng');
+            let raster = new ol.layer.Tile({ source: new ol.source.OSM() });
+            let map = new ol.Map({
+                layers: [raster],
+                target: 'map',
+                view: new ol.View({
+                    center: ol.proj.fromLonLat([initLng, initLat]),
+                    zoom: initZoom
+                })
+            });
+
+            map.on('change', function(evt){
+                let extent = map.getView().calculateExtent();
+                mapBridge.fireChangeEvent(extent[0], extent[1], extent[2], extent[3]);
+            });
+            map.on('moveend', function(evt){
+                let extent = map.getView().calculateExtent();
+                let southWest = ol.proj.toLonLat([extent[0], extent[1]]);
+                let northEast = ol.proj.toLonLat([extent[2], extent[3]]);
+                mapBridge.fireChangeEvent(southWest[0], southWest[1], northEast[0], northEast[1]);
+            });
+
+            document.zoomIn = function zoomIn() {
+                let zoomLevel = map.getView().getZoom();
+                if (zoomLevel <= 20) map.getView().setZoom(zoomLevel + 1);
+            }
+
+            document.zoomOut = function zoomOut() {
+                let zoomLevel = map.getView().getZoom();
+                if (zoomLevel > 0) map.getView().setZoom(zoomLevel - 1);
+            }
+
+            document.boundsAndZoom = function boundsAndZoom() {
+                var lat = mapBridge.getCenterLat();
+                var lng = mapBridge.getCenterLng()
+                var zoomLevel = mapBridge.getZoomLevel();
+                map.getView().setCenter(ol.proj.fromLonLat([lng, lat]));
+                map.getView().setZoom(zoomLevel);
+                let extent = map.getView().calculateExtent();
+                let southWest = ol.proj.toLonLat([extent[0], extent[1]]);
+                let northEast = ol.proj.toLonLat([extent[2], extent[3]]);
+                mapBridge.fireChangeEvent(southWest[0], southWest[1], northEast[0], northEast[1]);
+            };
+
+            document.panTo = function panTo() {
+                let lat = mapBridge.getCenterLat();
+                let lng = mapBridge.getCenterLng()
+                map.getView().setCenter(ol.proj.fromLonLat([lng, lat]));
+                let extent = map.getView().calculateExtent();
+                let southWest = ol.proj.toLonLat([extent[0], extent[1]]);
+                let northEast = ol.proj.toLonLat([extent[2], extent[3]]);
+                mapBridge.fireChangeEvent(southWest[0], southWest[1], northEast[0], northEast[1]);
+            };
+        </script>
+    </body>
+</html>

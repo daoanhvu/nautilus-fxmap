@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <style>
+        html, body {height: 100%; width: 100%; margin: 0;}
+        #map {height: 100%; width: 100%;}
+    </style>
+    <title>OSM</title>
+    <link rel="stylesheet" href="ol/ol.css" type="text/css" >
+    <script src="ol/ol.js"></script>
+</head>
+<body>
+<div id="map" class="map"></div>
+<script defer="defer" type="text/javascript">
+    var lat = null;
+    var lng = null;
+    function getLat() { return lat; }
+    function getLng() { return lng; }
+
+    let raster = new ol.layer.Tile({ source: new ol.source.OSM() });
+    let source = new ol.source.Vector({wrapX: false});
+    let vector = new ol.layer.Vector({
+        source: source,
+        style: new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 8,
+                fill: new ol.style.Fill({ color: 'red'})
+            })
+        })
+    });
+    let map = new ol.Map({
+        layers: [raster, vector],
+        target: 'map',
+        view: new ol.View({center: ol.proj.fromLonLat([90.4125, 23.8103]), zoom: 15})
+    });
+    let modify = new ol.interaction.Modify({source: source});
+    map.addInteraction(modify);
+    let draw = new ol.interaction.Draw({source: source, type: 'Point'});
+    map.addInteraction(draw);
+    map.on('contextmenu', function(evt){
+        remove();
+        let coords = ol.proj.toLonLat(evt.coordinate);
+        lat = coords[1];
+        lng = coords[0];
+
+    });
+    function remove() {
+        let features = source.getFeatures();
+        let lastFeature = features[features.length - 1];
+        source.clear();
+        console.log(lastFeature);
+        source.addFeature(lastFeature);
+    }
+    map.on('click', function(evt){
+        remove();
+        let coords = ol.proj.toLonLat(evt.coordinate);
+        lat = coords[1];
+        lng = coords[0];
+    });
+</script>
+</body>
+</html>

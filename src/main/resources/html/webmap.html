@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="EN">
+    <head>
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+        <style type="text/css">
+            html { height: 100% }
+            body { height: 100%; margin: 0px; padding: 0px }
+            #mapCanvas { height: 100%; background-color: #666970; }
+        </style>
+<!--        <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>-->
+        <script async defer type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAjhBsojTQrIgAILekpEy67cRQ6D8DwFrQ&callback=initMap"></script>
+        <script type="text/javascript">
+            let loadedUrl = new URL(window.location.href);
+            let urlParams = new URLSearchParams(loadedUrl.search);
+            let initZoom = urlParams.get('zoom');
+            let initLat = urlParams.get('lat');
+            let initLng = urlParams.get('lng');
+            function initMap() {
+                var latlng = new google.maps.LatLng(initLat, initLng);
+                var myOptions = {
+                    zoom: initZoom,
+                    center: latlng,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP,
+                    mapTypeControl: false,
+                    navigationControl: false,
+                    streetViewControl: false,
+                    backgroundColor: "#666970"
+                };
+
+                document.geocoder = new google.maps.Geocoder();
+                document.map = new google.maps.Map(document.getElementById("mapCanvas"), myOptions);
+
+                document.map.addListener('bounds_changed', function() {
+                    var bounds = document.map.getBounds();
+                    var ne = bounds.getNorthEast();
+                    var sw = bounds.getSouthWest();
+                    var cp = document.map.getCenter();
+                    mapBridge.setCenter(cp.lng(), cp.lat());
+                    // mapBridge.setNorthEastLat(ne.lat());
+                    // mapBridge.setNorthEastLng(ne.lng());
+                    // mapBridge.setSouthWestLat(sw.lat());
+                    // mapBridge.setSouthWestLng(sw.lng());
+                    mapBridge.fireChangeEvent(sw.lng(), sw.lat(), ne.lng(), ne.lat());
+                });
+
+                document.zoomIn = function zoomIn() {
+                    var zoomLevel = document.map.getZoom();
+                    if (zoomLevel <= 20) document.map.setZoom(zoomLevel + 1);
+                }
+
+                document.zoomOut = function zoomOut() {
+                    var zoomLevel = document.map.getZoom();
+                    if (zoomLevel > 0) document.map.setZoom(zoomLevel - 1);
+                }
+
+                document.zoomTo = function zoomTo() {
+                    var zoomLevel = mapBridge.getZoomLevel();
+                    document.map.setZoom(zoomLevel);
+                }
+
+                document.setMapTypeRoad = function setMapTypeRoad() {
+                    document.map.setMapTypeId(google.maps.MapTypeId.ROADMAP);
+                }
+                document.setMapTypeSatellite = function setMapTypeSatellite() {
+                    document.map.setMapTypeId(google.maps.MapTypeId.SATELLITE);
+                }
+                document.setMapTypeHybrid = function setMapTypeHybrid() {
+                    document.map.setMapTypeId(google.maps.MapTypeId.HYBRID);
+                }
+                document.setMapTypeTerrain = function setMapTypeTerrain() {
+                    document.map.setMapTypeId(google.maps.MapTypeId.TERRAIN);
+                }
+
+                document.goToLocation = function goToLocation(searchString) {
+                    document.geocoder.geocode( {'address': searchString}, function(results, status) {
+                        if (status === google.maps.GeocoderStatus.OK) {
+                            document.map.setCenter(results[0].geometry.location);
+                        } else {
+                            alert("Geocode was not successful for the following reason: " + status);
+                        }
+                    });
+                }
+
+                document.getMapInfo = function getMapInfo() {
+                    var bounds = document.map.getBounds();
+                    var ne = bounds.getNorthEast();
+                    var sw = bounds.getSouthWest();
+                    var cp = document.map.getCenter();
+                    mapBridge.setCenter(cp.lng(), cp.lat());
+                    mapBridge.setZoomLevel(document.map.getZoom());
+                    mapBridge.setNorthEastLat(ne.lat());
+                    mapBridge.setNorthEastLng(ne.lng());
+                    mapBridge.setSouthWestLat(sw.lat());
+                    mapBridge.setSouthWestLng(sw.lng());
+                };
+
+                document.getMapInfo = function getMapInfo() {
+                    var bounds = document.map.getBounds();
+                    var ne = bounds.getNorthEast();
+                    var sw = bounds.getSouthWest();
+                    var cp = document.map.getCenter();
+                    mapBridge.setCenter(cp.lng(), cp.lat());
+                    mapBridge.setZoomLevel(document.map.getZoom());
+                    mapBridge.setNorthEastLat(ne.lat());
+                    mapBridge.setNorthEastLng(ne.lng());
+                    mapBridge.setSouthWestLat(sw.lat());
+                    mapBridge.setSouthWestLng(sw.lng());
+                };
+
+                document.getBounds = function getBounds() {
+                    var bounds = document.map.getBounds();
+                    var ne = bounds.getNorthEast();
+                    var sw = bounds.getSouthWest();
+                    var cp = document.map.getCenter();
+                    mapBridge.setCenter(cp.lng(), cp.lat());
+                    mapBridge.setNorthEastLat(ne.lat());
+                    mapBridge.setNorthEastLng(ne.lng());
+                    mapBridge.setSouthWestLat(sw.lat());
+                    mapBridge.setSouthWestLng(sw.lng());
+                };
+
+                document.panTo = function panTo() {
+                    var lat = mapBridge.getCenterLat();
+                    var lng = mapBridge.getCenterLng()
+                    var latLng = new google.maps.LatLng(lat, lng);
+                    document.map.panTo(latLng);
+                    document.getBounds();
+                };
+
+                document.boundsAndZoom = function boundsAndZoom() {
+                    var lat = mapBridge.getCenterLat();
+                    var lng = mapBridge.getCenterLng()
+                    var latLng = new google.maps.LatLng(lat, lng);
+                    var zoomLevel = mapBridge.getZoomLevel();
+                    document.map.setZoom(zoomLevel);
+                    document.map.panTo(latLng);
+                    document.getBounds();
+                };
+            }
+        </script>
+        <title>Athena Map</title>
+    </head>
+    <body>
+        <div id="mapCanvas" style="width:100%; height:100%"></div>
+    </body>
+</html>
