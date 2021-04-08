@@ -11,11 +11,14 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.layout.Pane;
 import javafx.scene.web.WebView;
 
+import java.net.URL;
 import java.util.List;
+import java.util.ResourceBundle;
 
 public abstract class FXMapView extends Pane implements MapProjection.MapBoundChangeListener {
-    @FXML
+
     protected Canvas mapCanvas;
+    protected Canvas cvMovingObjects;
 
     // For webview
     protected WebView webView;
@@ -25,7 +28,12 @@ public abstract class FXMapView extends Pane implements MapProjection.MapBoundCh
     protected boolean animationStarted = false;
     protected ContextMenu activeContextMenu = null;
 
-    public FXMapView() {}
+    public FXMapView() {
+        mapCanvas = new Canvas();
+        cvMovingObjects = new Canvas();
+        this.getChildren().add(mapCanvas);
+        this.getChildren().add(cvMovingObjects);
+    }
 
     protected void loadWebViewMap() {
         Platform.runLater(() -> {
@@ -46,6 +54,13 @@ public abstract class FXMapView extends Pane implements MapProjection.MapBoundCh
             webView.setPrefWidth(getWidth());
             webView.setPrefHeight(newVal.doubleValue());
         });
+    }
+
+    public void initialize() {
+        mapCanvas.widthProperty().bind(this.widthProperty());
+        mapCanvas.heightProperty().bind(this.heightProperty());
+        cvMovingObjects.widthProperty().bind(this.widthProperty());
+        cvMovingObjects.heightProperty().bind(this.heightProperty());
     }
 
     protected abstract void render();
