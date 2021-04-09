@@ -1,6 +1,12 @@
-package com.nautilus.fxmap.geo;
+package com.nautilus.fxmap.geo.impl;
 
+import com.nautilus.fxmap.geo.GeoBoundary;
+import com.nautilus.fxmap.geo.GeoMappedPoint;
+import com.nautilus.fxmap.geo.GeoPoint;
+import com.nautilus.fxmap.geo.MapProjection;
+import com.nautilus.fxmap.geo.MapSource;
 import com.nautilus.fxmap.map.JSMapBridge;
+import com.nautilus.fxmap.map.impl.DefaultJSMapBridge;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -55,7 +61,7 @@ public class DefaultMapProjection extends MapProjection {
         this.zoomLevel = 8.0;
         this.southWest = new GeoMappedPoint();
         this.northEast = new GeoMappedPoint();
-        jsMapBridge = new JSMapBridge();
+        jsMapBridge = new DefaultJSMapBridge();
         jsMapBridge.setEventHandler(this);
         jsMapBridge.setZoomLevel(this.zoomLevel);
     }
@@ -64,7 +70,7 @@ public class DefaultMapProjection extends MapProjection {
         this.zoomLevel = 8.0;
         this.southWest = new GeoMappedPoint(29.03, -127.49, 0, height);
         this.northEast = new GeoMappedPoint(48.80, -64.56, width, 0);
-        jsMapBridge = new JSMapBridge();
+        jsMapBridge = new DefaultJSMapBridge();
         jsMapBridge.setEventHandler(this);
         jsMapBridge.setZoomLevel(this.zoomLevel);
     }

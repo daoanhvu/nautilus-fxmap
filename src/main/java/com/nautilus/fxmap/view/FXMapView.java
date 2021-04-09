@@ -40,19 +40,19 @@ public abstract class FXMapView extends Pane implements MapProjection.MapBoundCh
             if(webView != null) {
                 return;
             }
-            webView = new WebView();
-            getChildren().add(0, webView);
-            mapContent.initializeJSBridge(webView.getEngine());
-        });
+            FXMapView.this.webView = new WebView();
+            FXMapView.this.getChildren().add(0, webView);
+            FXMapView.this.mapContent.initializeJSBridge(webView.getEngine());
 
-        widthProperty().addListener((obs, oldVal, newVal) -> {
-            webView.setPrefWidth(newVal.doubleValue());
-            webView.setPrefHeight(this.getHeight());
-        });
+            FXMapView.this.widthProperty().addListener((obs, oldVal, newVal) -> {
+                webView.setPrefWidth(newVal.doubleValue());
+                webView.setPrefHeight(this.getHeight());
+            });
 
-        heightProperty().addListener((obs, oldVal, newVal) -> {
-            webView.setPrefWidth(getWidth());
-            webView.setPrefHeight(newVal.doubleValue());
+            FXMapView.this.heightProperty().addListener((obs, oldVal, newVal) -> {
+                webView.setPrefWidth(getWidth());
+                webView.setPrefHeight(newVal.doubleValue());
+            });
         });
     }
 

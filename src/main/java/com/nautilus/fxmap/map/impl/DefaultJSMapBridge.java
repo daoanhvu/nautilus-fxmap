@@ -1,7 +1,8 @@
-package com.nautilus.fxmap.map;
+package com.nautilus.fxmap.map.impl;
 
 import com.nautilus.fxmap.geo.GeoPoint;
 import com.nautilus.fxmap.geo.MapSource;
+import com.nautilus.fxmap.map.JSMapBridge;
 import com.nautilus.fxmap.view.WebMapEventHandler;
 import javafx.concurrent.Worker;
 import javafx.scene.web.WebEngine;
@@ -9,38 +10,11 @@ import netscape.javascript.JSObject;
 
 import java.util.LinkedList;
 
-public abstract class JSMapBridge {
+public class DefaultJSMapBridge extends JSMapBridge {
 
-    protected double centerLat;
-    protected double centerLng;
-    protected double zoomLevel;
-    protected GeoPoint southWest = new GeoPoint();
-    protected GeoPoint northEast = new GeoPoint();
-    protected String lastErrorMessage;
-
-    protected WebEngine webEngine;
-    protected WebMapEventHandler eventHandler;
-
-    protected final LinkedList<String> commands = new LinkedList<>();
-
-    protected MapSource mapSource;
-
-    public JSMapBridge() {
+    public DefaultJSMapBridge() {
         zoomLevel = 3.0;
         mapSource = MapSource.OSM;
-    }
-
-    /**
-     *
-     * @param htmlSourceFile Path to html source file
-     */
-    public void loadHTMLSource(String htmlSourceFile) {
-        /*
-         * TODO: When running the application from jar file, WebEngine could not load URL with parameters.
-         *       The work-around solution is removing parameters from the URL
-         */
-//        webEngine.load(htmlSourceFile + "?zoom=" + zoomLevel + "&lat=" + centerLat + "&lng=" + centerLng);
-        webEngine.load(htmlSourceFile);
     }
 
     public void initWebEngine() {
