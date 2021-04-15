@@ -6,13 +6,14 @@
 
     <groupId>com.nautilus</groupId>
     <artifactId>nautilus-fxmap</artifactId>
-    <version>1.0.5-SNAPSHOT</version>
+    <version>1.0.6-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <fasterxml_jackson_core_version>2.8.11</fasterxml_jackson_core_version>
+        <javafx-maven-plugin.version>0.0.6</javafx-maven-plugin.version>
     </properties>
 
     <dependencies>
@@ -67,8 +68,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <inherited>true</inherited>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
                     <verbose>true</verbose>
                     <fork>true</fork>
                 </configuration>
@@ -82,7 +83,7 @@
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
-                <version>0.0.5</version>
+                <version>${javafx-maven-plugin.version}</version>
             </plugin>
         </plugins>
     </build>
