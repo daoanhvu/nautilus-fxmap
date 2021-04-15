@@ -8,8 +8,6 @@ import javafx.concurrent.Worker;
 import javafx.scene.web.WebEngine;
 import netscape.javascript.JSObject;
 
-import java.util.LinkedList;
-
 public class DefaultJSMapBridge extends JSMapBridge {
 
     public DefaultJSMapBridge() {
