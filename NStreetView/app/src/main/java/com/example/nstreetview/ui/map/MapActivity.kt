@@ -26,11 +26,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.nstreetview.NSVApplication
 import com.example.nstreetview.repository.OsmRepository
 import com.example.nstreetview.R
+import com.example.nstreetview.data.AppDatabase
 import com.example.nstreetview.data.model.LocationInfo
 import com.example.nstreetview.data.model.VehicleInfo
+import com.example.nstreetview.service.WayService
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -47,6 +50,9 @@ class MapActivity: ComponentActivity() {
   private lateinit var locationCallback: LocationCallback
 
   private lateinit var vehicleInfo: VehicleInfo
+  private var lastLocation: LocationInfo? = null
+  private lateinit var appDatabase: AppDatabase
+  private lateinit var wayService: WayService
 
   // Use mutableStateOf to hold the location and speed data for the Compose UI
   private var locationText by mutableStateOf("Location: Not available")
@@ -69,6 +75,9 @@ class MapActivity: ComponentActivity() {
     vehicleInfo = (application as NSVApplication).vehicleInfo
     fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
+    appDatabase = AppDatabase.getDatabase(this)
+    wayService = WayService(appDatabase)
+
     // Define the callback to receive location updates
     locationCallback = object : LocationCallback() {
       override fun onLocationResult(locationResult: LocationResult) {
@@ -77,9 +86,28 @@ class MapActivity: ComponentActivity() {
           locationText = "Location: ${location.latitude}, ${location.longitude}"
           // Speed is in meters/second
           speedText = "Speed: ${location.speed} m/s with bearing: ${location.bearing}"
-          val locInfo = LocationInfo(location.time, location.latitude, location.longitude,
+          val locInfo = LocationInfo(location.time, location.latitude,
+            location.longitude,
             location.bearing, location.speed)
+
+          lifecycleScope.launch {
+            lastLocation?.let {
+              val wayResult = wayService.match(locInfo.lat, locInfo.lon,
+                lastLocation?.lat,
+                lastLocation?.lon)
+              wayResult ?. let {
+                withContext(Dispatchers.Main) {
+                  // Update UI state here
+                }
+              }
+            }
+          }
+
+          if (vehicleInfo.locations.size >= 120) {
+            vehicleInfo.locations.remove()
+          }
           vehicleInfo.locations.add(locInfo)
+          lastLocation = locInfo
         }
       }
     }
@@ -101,7 +129,7 @@ class MapActivity: ComponentActivity() {
 
     // Set the content of the activity to a Composable function
     setContent {
-      LocationDisplay(locationText, speedText)
+      LocationDisplay(locationText, speedText, appDatabase)
     }
 
   }
@@ -133,14 +161,15 @@ class MapActivity: ComponentActivity() {
     super.onPause()
     // Stop location updates when the activity is not in the foreground
     fusedLocationClient.removeLocationUpdates(locationCallback)
+    appDatabase.close()
   }
 }
 
 @Composable
-fun LocationDisplay(location: String, speed: String) {
+fun LocationDisplay(location: String, speed: String, appDatabase: AppDatabase) {
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
-  val osmRepository = remember { OsmRepository(context) }
+  val osmRepository = remember { OsmRepository(context, appDatabase) }
 
   fun importExampleData() {
     scope.launch {

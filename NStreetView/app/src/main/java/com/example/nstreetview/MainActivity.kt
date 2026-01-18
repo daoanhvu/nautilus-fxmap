@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.nstreetview.data.AppDatabase
+import com.example.nstreetview.ui.camera.CameraActivity
 import com.example.nstreetview.ui.map.MapActivity
 import com.example.nstreetview.ui.theme.NStreetViewTheme
 import com.google.gson.Gson

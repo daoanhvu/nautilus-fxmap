@@ -7,6 +7,7 @@ import com.example.nstreetview.data.model.LocationInfo
 import com.example.nstreetview.data.model.VehicleInfo
 import com.google.gson.Gson
 import java.util.LinkedList
+import androidx.core.content.edit
 
 class NSVApplication: Application() {
   lateinit var vehicleInfo: VehicleInfo
@@ -45,6 +46,6 @@ class NSVApplication: Application() {
   fun saveVehicleInfo(vehicleInfo: VehicleInfo) {
     this.vehicleInfo = vehicleInfo // Update the in-memory instance
     val vehicleJson = gson.toJson(vehicleInfo)
-    prefs.edit().putString("current_vehicle", vehicleJson).apply()
+    prefs.edit { putString("current_vehicle", vehicleJson) }
   }
 }

@@ -1,4 +1,4 @@
-package com.example.nstreetview
+package com.example.nstreetview.ui.camera
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.example.nstreetview.ui.camera.CameraScreen
 import com.example.nstreetview.ui.theme.NStreetViewTheme
 
 class CameraActivity : ComponentActivity() {
@@ -17,7 +16,10 @@ class CameraActivity : ComponentActivity() {
     enableEdgeToEdge()
     setContent {
       NStreetViewTheme {
-        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        Surface(
+          modifier = Modifier.Companion.fillMaxSize(),
+          color = MaterialTheme.colorScheme.background
+        ) {
           CameraScreen()
         }
       }
