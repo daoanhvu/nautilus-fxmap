@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">NStreetView</string>
+    <string name="camera_activity_label">CameraView</string>
+    <string name="map_activity_label">MapView</string>
+</resources>

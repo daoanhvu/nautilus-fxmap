@@ -1,0 +1,17 @@
+*.iml
+.gradle
+/fxmap/local.properties
+/fxmap/.idea/caches
+/fxmap/.idea/libraries
+/fxmap/.idea/modules.xml
+/fxmap/.idea/workspace.xml
+/fxmap/.idea/navEditor.xml
+/fxmap/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+/NStreetView/.idea/
+/NStreetView/app/build/
