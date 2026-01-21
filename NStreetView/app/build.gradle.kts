@@ -53,6 +53,8 @@ dependencies {
   implementation(libs.androidx.activity)
   implementation(libs.room.runtime)
   implementation(libs.room.ktx)
+  implementation(libs.androidx.compose.foundation.layout)
+  implementation(libs.androidx.compose.foundation)
   ksp(libs.room.compiler)
 
   val cameraxVersion = "1.5.2"

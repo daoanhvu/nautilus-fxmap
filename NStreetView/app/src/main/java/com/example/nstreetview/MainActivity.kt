@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.nstreetview.data.AppDatabase
+import com.example.nstreetview.repository.OsmRepository
 import com.example.nstreetview.ui.camera.CameraActivity
 import com.example.nstreetview.ui.map.MapActivity
 import com.example.nstreetview.ui.theme.NStreetViewTheme
@@ -56,12 +58,13 @@ class MainActivity : ComponentActivity() {
 fun mainScreen() {
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
-  val db = AppDatabase.getDatabase(context)
+  val appDatabase = AppDatabase.getDatabase(context)
+  val osmRepository = remember { OsmRepository(context, appDatabase) }
 
   fun exportDataToJson() {
     scope.launch(Dispatchers.IO) {
       // 1. Fetch data from the database
-      val images = db.streetViewImageDao().getAllImages()
+      val images = appDatabase.streetViewImageDao().getAllImages()
       if (images.isEmpty()) {
         withContext(Dispatchers.Main) {
           Toast.makeText(context, "No data to export.", Toast.LENGTH_SHORT).show()
@@ -111,6 +114,26 @@ fun mainScreen() {
     }
   }
 
+  fun importExampleData() {
+    scope.launch {
+      try {
+        // This runs the parsing and database insertion on an IO thread
+        osmRepository.importOsmDataFromResource(R.raw.pham_van_dong_kha_van_can, context)
+        // Show a success message on the main thread
+        withContext(Dispatchers.Main) {
+          Toast.makeText(context, "Map data imported successfully!", Toast.LENGTH_SHORT).show()
+        }
+      } catch (e: Exception) {
+        e.printStackTrace()
+        // Show an error message on the main thread
+        withContext(Dispatchers.Main) {
+          Toast.makeText(context, "Error importing map data: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+      }
+    }
+  }
+
+
   Column(
     modifier = Modifier
       .fillMaxSize()
@@ -144,6 +167,20 @@ fun mainScreen() {
         .height(60.dp) // Match the height
     ) {
       Text(text = "Export Data", fontSize = 18.sp)
+    }
+
+    Spacer(modifier = Modifier.height(24.dp)) // Add space between the buttons
+
+    // Button for "Import Data"
+    Button(
+      onClick = {
+        importExampleData()
+      },
+      modifier = Modifier
+        .fillMaxWidth(0.8f) // Match the width of the other button
+        .height(60.dp) // Match the height
+    ) {
+      Text(text = "Import example map data", fontSize = 18.sp)
     }
 
     Spacer(modifier = Modifier.height(24.dp)) // Add space between the buttons

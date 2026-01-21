@@ -9,6 +9,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.nstreetview.R
 import com.example.nstreetview.data.AppDatabase
 import com.example.nstreetview.data.dao.CrossingPointDao
+import com.example.nstreetview.data.dao.CrossingWaysDao
 import com.example.nstreetview.data.dao.StreetWayDao
 import com.example.nstreetview.data.dao.WayGeometryDao
 import com.example.nstreetview.data.dao.WayRtreeDao
@@ -34,6 +35,7 @@ class OsmRepositoryTest {
   private lateinit var wayGeometryDao: WayGeometryDao
   private lateinit var wayRtreeDao: WayRtreeDao
   private lateinit var crossingPointDao: CrossingPointDao
+  private lateinit var crossingWayDao: CrossingWaysDao
   private lateinit var osmRepository: OsmRepository
   private lateinit var context: Context
 
@@ -61,6 +63,7 @@ class OsmRepositoryTest {
     wayGeometryDao = inMemoryDatabase.wayGeometryDao()
     wayRtreeDao = inMemoryDatabase.wayRtreeDao()
     crossingPointDao = inMemoryDatabase.crossingPointDao()
+    crossingWayDao = inMemoryDatabase.crossingWaysDao()
 
     // 2. Instantiate the repository, but with the test database instance
     // This is an important correction to ensure your test uses the in-memory DB
@@ -111,7 +114,19 @@ class OsmRepositoryTest {
     assertNotNull(cross9207017673)
     assertEquals("traffic_signals", cross9207017673?.signalType)
 
-    // 4. Check WayRtreeEntity table (Virtual Table)
+    // 4. Check CrossingWayEntity table
+    val allCrossingWays = crossingWayDao.getAllCrossingWays()
+    assertNotNull(allCrossingWays)
+    assertEquals(10, allCrossingWays.size)
+
+    //crossing: 9207017673
+    //way: 1015442474,
+    val crossingWays9207017673 = crossingWayDao.getAllWaysByCrossId(9207017673)
+    assertNotNull(allCrossingWays)
+    assertEquals(1, crossingWays9207017673.size)
+    assertEquals(1015442474, crossingWays9207017673[0].wayId)
+
+    // 5. Check WayRtreeEntity table (Virtual Table)
     // A simple way to test the R-tree is to perform a query that should find our item.
     val searchBoundingBox = WayRtreeEntity(
       0, 10.8659825, 10.8663887, 106.7616452, 106.7621076)

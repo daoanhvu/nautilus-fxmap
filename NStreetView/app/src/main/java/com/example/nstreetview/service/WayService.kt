@@ -2,6 +2,7 @@ package com.example.nstreetview.service
 
 import com.example.nstreetview.data.AppDatabase
 import com.example.nstreetview.data.model.CrossingPointDto
+import com.example.nstreetview.data.model.CrossingPointWithDistance
 import com.example.nstreetview.data.model.MapMatchResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -81,9 +82,11 @@ class WayService(private val appDatabase: AppDatabase) {
       var best: MapMatchResult? = null
       var bestDist = Double.MAX_VALUE
 
-      for (id in ids) {
-        val wkt = appDatabase.wayGeometryDao().getGeometryText(id) ?: continue
-        val wayWidth = appDatabase.streetWayDao().getWidth(id) ?: 6.0F
+      val wayWidthList = appDatabase.streetWayDao().getWayWidthByIds(ids)
+
+      for (way in wayWidthList) {
+        val wkt = appDatabase.wayGeometryDao().getGeometryText(way.id) ?: continue
+        val wayWidth = way.width ?: 6.0F
         val halfWidth = wayWidth / 2.0F
         val pts = parseWkt(wkt)
 
@@ -105,43 +108,45 @@ class WayService(private val appDatabase: AppDatabase) {
             val segBearing = bearing(ax, ay, bx, by)
             val vehBearing = if (prevLat != null && prevLng != null) {
               val (hx, hy) = lonLatToMercator(prevLng, prevLat)
-              bearing(hx, hy, px, py)
+//              bearing(hx, hy, px, py)
+              geoBearing(prevLat, prevLng, lat, lng)
             } else {
               segBearing
             }
 
             val forward = abs(segBearing - vehBearing) < 90
             bestDist = dist
-            best = MapMatchResult(id, dist, segBearing, forward)
+            best = MapMatchResult(way.id, way.name, dist, segBearing, forward)
           }
         }
       }
       best
     }
 
-  suspend fun detectCrossingWarning(carLat: Double, carLon: Double, heading: Double): CrossingPointDto? {
+  suspend fun detectCrossingWarning(carLat: Double, carLon: Double, heading: Double, wayId: Long): CrossingPointDto? {
     val deltaLat = metersToLat(400.0)
     val deltaLon = metersToLon(400.0, carLat)
 
-    val candidates = appDatabase.crossingPointDao().findNearby(
+    val candidates = appDatabase.crossingPointDao().findNearbyByWayId(
       carLat - deltaLat,
       carLat + deltaLat,
       carLon - deltaLon,
-      carLon + deltaLon
+      carLon + deltaLon,
+      wayId
     )
 
-//    val distance = haversine(carLat, carLon, candidates[0].lat, candidates[0].lon)
-//    android.util.Log.d(TAG, "Caculated distance: $distance")
-
-    return candidates
-      .filter { haversine(carLat, carLon, it.lat, it.lon) < 400.0 }
-      .firstOrNull { isAhead(carLat, carLon, heading, it.lat, it.lon) }
-      ?. let { entity -> CrossingPointDto(
-        id = entity.id,
-        lat = entity.lat,
-        lon = entity.lon,
-        signalType = entity.signalType)
-      }
+    return candidates.map {
+      val d = haversine(carLat, carLon, it.lat, it.lon)
+      CrossingPointWithDistance(it.id, it.lat, it.lon, d, it.signalType)
+    }.sortedBy { it.distance
+    }.firstOrNull {
+        isAhead(carLat, carLon, heading, it.lat, it.lon)
+    }?.let { entity -> CrossingPointDto(
+      id = entity.id,
+      lat = entity.lat,
+      lon = entity.lon,
+      signalType = entity.signalType)
+    }
   }
 
   companion object {

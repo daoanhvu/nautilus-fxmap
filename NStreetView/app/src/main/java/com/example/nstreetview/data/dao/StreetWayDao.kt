@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.nstreetview.data.entity.WayEntity
+import com.example.nstreetview.data.model.WayWidthDto
 
 @Dao
 interface StreetWayDao {
@@ -22,4 +23,7 @@ interface StreetWayDao {
 
   @Query("SELECT * FROM nsv_ways WHERE id > 0")
   fun getAllWays(): List<WayEntity>
+
+  @Query("SELECT id, name, width FROM nsv_ways WHERE id IN (:wayIds)")
+  fun getWayWidthByIds(wayIds: List<Long>): List<WayWidthDto>
 }

@@ -6,11 +6,13 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.nstreetview.data.dao.CrossingPointDao
+import com.example.nstreetview.data.dao.CrossingWaysDao
 import com.example.nstreetview.data.dao.StreetViewImageDao
 import com.example.nstreetview.data.dao.StreetWayDao
 import com.example.nstreetview.data.dao.WayGeometryDao
 import com.example.nstreetview.data.dao.WayRtreeDao
 import com.example.nstreetview.data.entity.CrossingPointEntity
+import com.example.nstreetview.data.entity.CrossingWayEntity
 import com.example.nstreetview.data.entity.StreetViewImage
 import com.example.nstreetview.data.entity.WayEntity
 import com.example.nstreetview.data.entity.WayGeometryEntity
@@ -20,7 +22,8 @@ import com.example.nstreetview.data.entity.WayRtreeEntity
   WayEntity::class,
   WayRtreeEntity::class,
   WayGeometryEntity::class,
-  CrossingPointEntity::class],
+  CrossingPointEntity::class,
+  CrossingWayEntity::class],
   version = 1,
   exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
@@ -29,6 +32,7 @@ abstract class AppDatabase : RoomDatabase() {
   abstract fun wayRtreeDao(): WayRtreeDao
   abstract fun wayGeometryDao(): WayGeometryDao
   abstract fun crossingPointDao(): CrossingPointDao
+  abstract fun crossingWaysDao(): CrossingWaysDao
 
   companion object {
     @Volatile

@@ -19,7 +19,9 @@ data class ParsedOsmData(
   val ways: List<WayEntity>,
   val geometries: List<WayGeometryEntity>,
   val rtreeEntries: List<WayRtreeEntity>,
-  val crossingEntries: List<CrossingPointEntity>
+  val crossingEntries: List<CrossingPointEntity>,
+  // key = crossing ID, value = List of way ID
+  val crossingWays: Map<Long, MutableList<Long>>
 )
 
 
@@ -115,6 +117,8 @@ class OsmParser {
     val geometryEntities = mutableListOf<WayGeometryEntity>()
     val rtreeEntities = mutableListOf<WayRtreeEntity>()
     val crossingEntries = osmNodes.values.filter { it.isCrossing }.map { CrossingPointEntity(it.id, it.lat, it.lon, it.signalTypes) }
+    val crossingMap = crossingEntries.associateBy { it.id } as HashMap
+    val crossingWaysMap = mutableMapOf<Long, MutableList<Long>>()
 
     for (way in osmWays) {
       wayEntities.add(
@@ -131,7 +135,27 @@ class OsmParser {
         )
       )
 
-      val wayNodes = way.nodeRefs.mapNotNull { osmNodes[it] }
+      val wayNodes = way.nodeRefs.mapNotNull {
+        val node = osmNodes[it]
+        node ?. let {theNode ->
+          if (crossingMap.contains(theNode.id)) {
+            if (crossingWaysMap.contains(theNode.id)) {
+              var listWays: MutableList<Long>? = crossingWaysMap[theNode.id]
+              if (listWays == null) {
+                listWays = mutableListOf()
+              }
+              listWays.add(way.id)
+            } else {
+              val listWays: MutableList<Long> = mutableListOf()
+              listWays.add(way.id)
+              crossingWaysMap[theNode.id] = listWays
+            }
+          }
+        }
+
+        node
+      }
+
       if (wayNodes.isNotEmpty()) {
         // Create WKT (Well-Known Text) string for geometry
         val geomString = "LINESTRING (" + wayNodes.joinToString(", ") { "${it.lon} ${it.lat}" } + ")"
@@ -155,7 +179,8 @@ class OsmParser {
     return ParsedOsmData(wayEntities,
       geometryEntities,
       rtreeEntities,
-      crossingEntries)
+      crossingEntries,
+      crossingWaysMap)
   }
 
   companion object {
