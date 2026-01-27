@@ -9,5 +9,6 @@ data class NodePointEntity(
   val id: Long,
   val lat: Double,
   val lon: Double,
-  val type: Int
+  val type: Int,
+  val tags: String
 )
